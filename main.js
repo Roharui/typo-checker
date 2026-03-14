@@ -53,6 +53,7 @@ class CharHighlighterPlugin extends Plugin {
 
 			const doc = update.state.doc;
 			const changes = [];
+			const seenChanges = new Set();
 			const checkedRanges = new Set();
 
 			update.changes.iterChangedRanges((_fromA, _toA, fromB, toB) => {
@@ -65,15 +66,25 @@ class CharHighlighterPlugin extends Plugin {
 
 				const text = doc.sliceString(checkFrom, checkTo);
 
-				for (const pat of patterns) {
+				for (let i = 0; i < patterns.length; i++) {
+					const pat = patterns[i];
 					const regex = self._makeRegex(pat);
 					if (!regex) continue;
 					let m;
 					while ((m = regex.exec(text)) !== null) {
+						// 0 길이 매치는 lastIndex를 수동 전진시켜 무한 루프를 방지한다.
+						if (m[0].length === 0) {
+							regex.lastIndex += 1;
+							continue;
+						}
 						const absFrom = checkFrom + m.index;
 						const absTo   = absFrom + m[0].length;
 						if (m[0] !== pat.replacement) {
-							changes.push({ from: absFrom, to: absTo, insert: pat.replacement });
+							const key = `${absFrom}:${absTo}:${pat.replacement}`;
+							if (!seenChanges.has(key)) {
+								changes.push({ from: absFrom, to: absTo, insert: pat.replacement, priority: i });
+								seenChanges.add(key);
+							}
 						}
 					}
 				}
@@ -82,12 +93,13 @@ class CharHighlighterPlugin extends Plugin {
 			if (changes.length === 0) return;
 
 			// 오름차순 정렬 후 겹치는 범위 제거
-			changes.sort((a, b) => a.from - b.from);
+			// 같은 시작점에서는 설정 순서(priority)가 앞선 패턴을 우선한다.
+			changes.sort((a, b) => a.from - b.from || a.priority - b.priority || b.to - a.to);
 			const deduped = [];
 			let lastTo = -1;
 			for (const c of changes) {
 				if (c.from >= lastTo) {
-					deduped.push(c);
+					deduped.push({ from: c.from, to: c.to, insert: c.insert });
 					lastTo = c.to;
 				}
 			}
