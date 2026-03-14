@@ -1,0 +1,12 @@
+/* 문자 하이라이터 — Reading mode 하이라이트 스타일 */
+.char-highlighter-match {
+	border-radius: 3px;
+	padding: 0 2px;
+	/* 색상은 JS에서 인라인 스타일로 주입됩니다 */
+}
+
+.char-highlighter-divider {
+	margin: 4px 0;
+	border: none;
+	border-top: 1px solid var(--background-modifier-border);
+}

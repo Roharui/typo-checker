@@ -1,0 +1,10 @@
+{
+  "id": "char-highlighter",
+  "name": "Char Highlighter",
+  "version": "1.0.0",
+  "minAppVersion": "0.15.0",
+  "description": "특정 문자 또는 단어를 감지하여 에디터와 프리뷰에 하이라이트를 적용합니다.",
+  "author": "roharui",
+  "authorUrl": "",
+  "isDesktopOnly": false
+}
