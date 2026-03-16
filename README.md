@@ -1,11 +1,10 @@
 # Char Highlighter
 
-Obsidian에서 특정 문자/단어를 감지해 하이라이트하고, 필요하면 자동 치환까지 수행하는 플러그인입니다.
+Obsidian 에디터(Live Preview / Source)에서 특정 문자/단어를 감지해 하이라이트하고, 필요하면 자동 치환까지 수행하는 플러그인입니다.
 
 ## 주요 기능
 
 - Live Preview / Source 모드에서 CodeMirror 6 데코레이션 하이라이트
-- Reading 모드에서 렌더링 결과 텍스트 하이라이트
 - 패턴별 색상 지정
 - 일반 문자열 또는 정규식 패턴 지원
 - 패턴별 자동 치환(Auto Replace) 지원

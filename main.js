@@ -30,9 +30,6 @@ class CharHighlighterPlugin extends Plugin {
 		// Live Preview / Source mode — 자동 교체
 		this.registerEditorExtension(this.buildAutoReplaceExtension());
 
-		// Reading mode — DOM 후처리
-		this.registerMarkdownPostProcessor((el) => this.applyHighlightsToElement(el));
-
 		// 설정 탭
 		this.addSettingTab(new CharHighlighterSettingTab(this.app, this));
 	}
@@ -178,67 +175,6 @@ class CharHighlighterPlugin extends Plugin {
 		}
 
 		return builder.finish();
-	}
-
-	// ── Reading mode 하이라이트 ────────────────────────────────────────────
-	applyHighlightsToElement(el) {
-		const patterns = this._activePatterns();
-		if (patterns.length === 0) return;
-
-		const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT, null, false);
-		const textNodes = [];
-		let node;
-		while ((node = walker.nextNode())) textNodes.push(node);
-
-		for (const textNode of textNodes) {
-			this._highlightTextNode(textNode, patterns);
-		}
-	}
-
-	_highlightTextNode(textNode, patterns) {
-		const original = textNode.textContent;
-		const fragment = document.createDocumentFragment();
-		let remaining   = original;
-
-		while (remaining.length > 0) {
-			let bestIndex  = Infinity;
-			let bestMatch  = null;
-			let bestColor  = '';
-
-			for (const pat of patterns) {
-				const regex = this._makeRegex(pat);
-				if (!regex) continue;
-				const m = regex.exec(remaining);
-				if (m && m.index < bestIndex) {
-					bestIndex = m.index;
-					bestMatch = m[0];
-					bestColor = pat.color;
-				}
-			}
-
-			if (bestMatch === null) {
-				fragment.appendChild(document.createTextNode(remaining));
-				break;
-			}
-
-			// 매치 앞 텍스트
-			if (bestIndex > 0) {
-				fragment.appendChild(document.createTextNode(remaining.slice(0, bestIndex)));
-			}
-
-			// 하이라이트 span
-			const span = document.createElement('span');
-			span.className = 'char-highlighter-match';
-			span.style.backgroundColor = bestColor;
-			span.style.borderRadius     = '3px';
-			span.style.padding          = '0 2px';
-			span.textContent = bestMatch;
-			fragment.appendChild(span);
-
-			remaining = remaining.slice(bestIndex + bestMatch.length);
-		}
-
-		textNode.parentNode.replaceChild(fragment, textNode);
 	}
 
 	// ── 유틸 ────────────────────────────────────────────────────────────
